@@ -41,6 +41,12 @@ async function parseConfig(configFile?: string): Promise<null | CronExpression[]
 }
 
 async function main() {
+	const authToken = Bun.env["TRIGRR_AUTH_TOKEN"]
+	if(!authToken) {
+		// TODO: could still allow running blocking functions without the token.
+		console.log("Missing TRIGRR_AUTH_TOKEN")
+		return 0;
+	}
 	const { values } = parseArgs({
 		args: Bun.argv,
 		options: {
@@ -66,7 +72,17 @@ async function main() {
 			ex.cronExpression,
 			async () => {
 				console.log(`job ${i+1}: ${ex.method} ${ex.url.origin}...`)
-				const res = await fetch(ex.url,  {method: ex.method})
+				const res = await fetch(
+					ex.url,
+					{
+						method: ex.method,
+						headers: {
+							"Content-Type": "application/json",
+							"Authorization": `Basic ${authToken}`
+						}
+					}
+				)
+				// TODO: print applicationId
 				console.log(`job ${i+1}: received ${res.status} from ${ex.url.origin}...`)
 			})
 		return new Promise<void>((resolve) => {

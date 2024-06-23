@@ -1,3 +1,0 @@
-* * * * * GET http://example.com
-*/2 * * * * POST http://example.com
-0 * * * * http://example.com
